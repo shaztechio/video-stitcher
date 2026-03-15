@@ -29,8 +29,8 @@ npx @shaztech/video-stitcher <input-files...>
 ### Local development
 
 ```sh
-git clone https://github.com/shazron/video-stitch-ffmpeg.git
-cd video-stitch-ffmpeg
+git clone https://github.com/shazron/video-stitcher.git
+cd video-stitcher
 npm install
 npm link          # makes video-stitcher available globally from this checkout
 ```
@@ -46,7 +46,7 @@ At least 2 input files are required.
 ### Options
 
 | Option | Description | Default |
-|--------|-------------|---------|
+| ------ | ----------- | ------- |
 | `-o, --output <file>` | Output file path | `stitched_<timestamp>.mp4` |
 | `-d, --image-duration <n>` | Default display duration for images (seconds) | `1` |
 | `-h, --help` | Show help message | |
@@ -81,4 +81,3 @@ video-stitcher image1.jpg:3 image2.jpg video1.mp4 -o output.mp4 -d 2
 # Process all MP4s in a directory
 video-stitcher *.mp4 -o combined.mp4
 ```
-
