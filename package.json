@@ -27,7 +27,7 @@
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shazron/video-stitcher"
+    "url": "https://github.com/shaztechio/video-stitcher"
   },
   "engines": {
     "node": ">=20"
