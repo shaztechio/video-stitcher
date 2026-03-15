@@ -8,5 +8,5 @@ module.exports = {
     ecmaVersion: 2022,
     sourceType: 'module'
   },
-  ignorePatterns: ['node_modules/', 'webapp/']
+  ignorePatterns: ['node_modules/']
 }

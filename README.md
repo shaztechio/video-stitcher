@@ -79,6 +79,3 @@ video-stitcher image1.jpg:3 image2.jpg video1.mp4 -o output.mp4 -d 2
 video-stitcher *.mp4 -o combined.mp4
 ```
 
-## Web App
-
-For the browser-based version with Google OAuth and Cloud Run deployment, see [WEBAPP.md](./webapp/WEBAPP.md).
