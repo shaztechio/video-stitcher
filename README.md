@@ -1,5 +1,8 @@
 # video-stitcher
 
+[![CI](https://github.com/shazron/video-stitcher/actions/workflows/ci.yml/badge.svg)](https://github.com/shazron/video-stitcher/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/@shaztech/video-stitcher)](https://www.npmjs.com/package/@shaztech/video-stitcher)
+
 A CLI tool to stitch videos and images into a single MP4 using FFmpeg.
 
 ## Prerequisites
