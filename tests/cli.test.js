@@ -275,6 +275,23 @@ describe('stitchFiles', () => {
     await expect(stitchFiles([videoFile, videoFile], 'out.mp4')).resolves.toBe('out.mp4')
     writeSpy.mockRestore()
   })
+
+  it('mixes background audio at default volume (1.0) when bgAudio is provided', async () => {
+    mockFfmpeg.ffprobe.mockImplementation((_, cb) => cb(null, landscapeVideoMeta))
+    await expect(
+      stitchFiles([videoFile, videoFile], 'out.mp4', { bgAudio: 'music.mp3' })
+    ).resolves.toBe('out.mp4')
+    // Extra input call for bgAudio
+    expect(mockCommand.input).toHaveBeenCalledWith('music.mp3')
+  })
+
+  it('mixes background audio at custom volume when bgAudioVolume is provided', async () => {
+    mockFfmpeg.ffprobe.mockImplementation((_, cb) => cb(null, landscapeVideoMeta))
+    await expect(
+      stitchFiles([videoFile, videoFile], 'out.mp4', { bgAudio: 'music.mp3', bgAudioVolume: 0.5 })
+    ).resolves.toBe('out.mp4')
+    expect(mockCommand.input).toHaveBeenCalledWith('music.mp3')
+  })
 })
 
 describe('main', () => {
@@ -339,6 +356,27 @@ describe('main', () => {
 
   it('errors when --image-duration is not a number', async () => {
     process.argv = ['node', 'cli.js', 'a.mp4', 'b.mp4', '-d', 'abc', '-o', 'out.mp4']
+    await expect(main()).rejects.toThrow('process.exit:1')
+  })
+
+  it('runs successfully with --bg-audio and existing file', async () => {
+    process.argv = ['node', 'cli.js', 'a.mp4', 'b.mp4', '--bg-audio', 'music.mp3', '-o', 'out.mp4']
+    await expect(main()).resolves.toBeUndefined()
+  })
+
+  it('runs successfully with --bg-audio and custom --bg-audio-volume', async () => {
+    process.argv = ['node', 'cli.js', 'a.mp4', 'b.mp4', '--bg-audio', 'music.mp3', '--bg-audio-volume', '0.5', '-o', 'out.mp4']
+    await expect(main()).resolves.toBeUndefined()
+  })
+
+  it('errors when --bg-audio file does not exist', async () => {
+    existsSpy.mockImplementation((p) => p !== 'music.mp3')
+    process.argv = ['node', 'cli.js', 'a.mp4', 'b.mp4', '--bg-audio', 'music.mp3', '-o', 'out.mp4']
+    await expect(main()).rejects.toThrow('process.exit:1')
+  })
+
+  it('errors when --bg-audio-volume is not a number', async () => {
+    process.argv = ['node', 'cli.js', 'a.mp4', 'b.mp4', '--bg-audio-volume', 'abc', '-o', 'out.mp4']
     await expect(main()).rejects.toThrow('process.exit:1')
   })
 })

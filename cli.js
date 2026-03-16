@@ -23,7 +23,8 @@ const probeFile = (filePath) => {
 }
 
 const stitchFiles = async (files, outputPath, options = {}) => {
-  const defaultImageDuration = options.imageDuration || 1
+  const { imageDuration, bgAudio, bgAudioVolume = 1.0, onProgress } = options
+  const defaultImageDuration = imageDuration || 1
 
   const fileMetadatas = await Promise.all(files.map(f => probeFile(f.path)))
 
@@ -147,12 +148,31 @@ const stitchFiles = async (files, outputPath, options = {}) => {
     concatInputs.push(audioInputs[i])
   }
 
+  const concatAudioOut = bgAudio ? 'concat_outa' : 'outa'
+
   filterComplex.push({
     filter: 'concat',
     options: { n: files.length, v: 1, a: 1 },
     inputs: concatInputs,
-    outputs: ['outv', 'outa']
+    outputs: ['outv', concatAudioOut]
   })
+
+  if (bgAudio) {
+    const bgAudioIndex = files.length
+    command.input(bgAudio).inputOptions(['-stream_loop -1'])
+    filterComplex.push({
+      filter: 'volume',
+      options: { volume: bgAudioVolume },
+      inputs: `${bgAudioIndex}:a`,
+      outputs: 'bg_vol'
+    })
+    filterComplex.push({
+      filter: 'amix',
+      options: { inputs: 2, duration: 'first', normalize: 0 },
+      inputs: ['concat_outa', 'bg_vol'],
+      outputs: 'outa'
+    })
+  }
 
   return new Promise((resolve, reject) => {
     command
@@ -177,8 +197,8 @@ const stitchFiles = async (files, outputPath, options = {}) => {
         if (percent > 99.9) percent = 99.9
         percent = percent ?? 0
 
-        if (options.onProgress) {
-          options.onProgress({ ...progress, percent })
+        if (onProgress) {
+          onProgress({ ...progress, percent })
         }
 
         process.stdout.write(`\rProgress: ${percent.toFixed(1)}%`)
@@ -211,6 +231,8 @@ const buildProgram = () => {
     .argument('<input-files...>', 'Input video or image files (at least 2)')
     .option('-o, --output <file>', 'Output file path')
     .option('-d, --image-duration <n>', 'Duration for images in seconds', parseFloat, 1)
+    .option('--bg-audio <file>', 'Background audio file to mix into the output')
+    .option('--bg-audio-volume <n>', 'Background audio volume (0.0–2.0)', parseFloat, 1.0)
     .addHelpText('after', `
 Examples:
   video-stitch video1.mp4 video2.mp4 -o output.mp4
@@ -218,11 +240,16 @@ Examples:
   video-stitch *.mp4 -o combined.mp4
   video-stitch image1.jpg:3 image2.jpg:5 video1.mp4 -o output.mp4
   video-stitch image1.jpg:3 image2.jpg video1.mp4 -o output.mp4 -d 2
+  video-stitch video1.mp4 video2.mp4 --bg-audio music.mp3 --bg-audio-volume 0.5 -o output.mp4
 
 Per-image duration:
   Append :<seconds> to an image filename to override the global --image-duration default.
   Example: image.jpg:3 displays for 3 seconds regardless of -d value.
-  Globs with duration annotations (*.jpg:4) are not supported; use -d for a uniform default.`)
+  Globs with duration annotations (*.jpg:4) are not supported; use -d for a uniform default.
+
+Background audio:
+  --bg-audio loops automatically to match video length and is trimmed if longer.
+  --bg-audio-volume sets the volume multiplier (0.0 = muted, 1.0 = original, 2.0 = double).`)
 
   return program
 }
@@ -259,11 +286,22 @@ const main = async () => {
     program.error('--image-duration requires a numeric value')
   }
 
+  if (opts.bgAudio && !fs.existsSync(opts.bgAudio)) {
+    program.error(`Background audio file does not exist: ${opts.bgAudio}`)
+  }
+
+  if (isNaN(opts.bgAudioVolume)) {
+    program.error('--bg-audio-volume requires a numeric value')
+  }
+
   const outputFile = opts.output || `stitched_${Date.now()}.mp4`
 
   console.log(`Input files: ${program.args.map(r => parseInputArg(r).filepath).join(', ')}`)
   console.log(`Output file: ${outputFile}`)
   console.log(`Image duration: ${opts.imageDuration}s`)
+  if (opts.bgAudio) {
+    console.log(`Background audio: ${opts.bgAudio} (volume: ${opts.bgAudioVolume})`)
+  }
   console.log('')
 
   const files = program.args.map(raw => {
@@ -281,6 +319,8 @@ const main = async () => {
 
   const result = await stitchFiles(files, outputFile, {
     imageDuration: opts.imageDuration,
+    bgAudio: opts.bgAudio,
+    bgAudioVolume: opts.bgAudioVolume,
     onProgress: () => {}
   })
 
