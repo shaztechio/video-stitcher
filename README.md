@@ -49,6 +49,8 @@ At least 2 input files are required.
 | ------ | ----------- | ------- |
 | `-o, --output <file>` | Output file path | `stitched_<timestamp>.mp4` |
 | `-d, --image-duration <n>` | Default display duration for images (seconds) | `1` |
+| `--bg-audio <file>` | Background audio file to mix into the output | |
+| `--bg-audio-volume <n>` | Background audio volume multiplier (0.0–2.0) | `1.0` |
 | `-h, --help` | Show help message | |
 
 ### Per-image duration
@@ -62,6 +64,18 @@ video-stitcher image1.jpg:3 image2.jpg:5 video1.mp4 -o output.mp4
 - Images without an annotation fall back to `-d` / `--image-duration`
 - Duration annotations on video files are silently ignored (videos use their actual duration)
 - Globs with annotations (e.g. `*.jpg:4`) are not supported — use `-d` for a uniform default
+
+### Background audio
+
+Use `--bg-audio` to mix a background audio track into the final output:
+
+```sh
+video-stitcher video1.mp4 video2.mp4 --bg-audio music.mp3 -o output.mp4
+```
+
+- The audio loops automatically if shorter than the video
+- The audio is trimmed if longer than the video
+- Use `--bg-audio-volume` to adjust the level: `0.0` is muted, `1.0` is original, `2.0` is double
 
 ## Use Cases
 
@@ -84,4 +98,10 @@ video-stitcher image1.jpg:3 image2.jpg video1.mp4 -o output.mp4 -d 2
 
 # Process all MP4s in a directory
 video-stitcher *.mp4 -o combined.mp4
+
+# Add background music
+video-stitcher video1.mp4 video2.mp4 --bg-audio music.mp3 -o output.mp4
+
+# Add background music at half volume
+video-stitcher image1.jpg:3 video1.mp4 --bg-audio music.mp3 --bg-audio-volume 0.5 -o output.mp4
 ```
