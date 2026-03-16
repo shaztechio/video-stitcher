@@ -63,6 +63,10 @@ video-stitcher image1.jpg:3 image2.jpg:5 video1.mp4 -o output.mp4
 - Duration annotations on video files are silently ignored (videos use their actual duration)
 - Globs with annotations (e.g. `*.jpg:4`) are not supported — use `-d` for a uniform default
 
+## Use Cases
+
+See [USECASES.md](USECASES.md) for common usage patterns and pipeline ideas.
+
 ## Examples
 
 ```sh
