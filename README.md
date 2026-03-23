@@ -8,7 +8,7 @@ A CLI tool to stitch videos and images into a single MP4 using FFmpeg.
 ## Prerequisites
 
 - Node.js 20+
-- [FFmpeg](https://ffmpeg.org/) installed and on your system PATH
+- [FFmpeg](https://ffmpeg.org/) installed and on your system PATH — see [INSTALLING_FFMPEG.md](INSTALLING_FFMPEG.md) for platform-specific instructions
 
 ## Installation
 
